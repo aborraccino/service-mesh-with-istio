@@ -1,0 +1,41 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.0'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id 'com.google.cloud.tools.jib' version '3.3.0'
+}
+
+group = 'com.worldpay.hpp.t19.istio'
+version = '0.0.1'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+// generates build meta-data about your application
+springBoot {
+	buildInfo()
+}
+bootJar {
+	archiveFileName = "cart.jar"
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+jib {
+	container {
+		jvmFlags = ['-Xms512m', '-Xdebug']
+		mainClass = 'com.worldpay.hpp.t19.istio.cart.CartApplication'
+		args = []
+		ports = ['8080/tcp']
+	}
+}
+jib.to.image = 'cart'

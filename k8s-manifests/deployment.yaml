@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: t19
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cart
+  namespace: t19
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart
+  namespace: t19
+  labels:
+    app: cart
+    service: cart
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: cart
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart
+  namespace: t19
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cart
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: cart
+        version: v1
+    spec:
+      serviceAccountName: cart
+      containers:
+        - image: cart:latest
+          name: cart
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
