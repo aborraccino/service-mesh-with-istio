@@ -1,9 +1,14 @@
-# Getting Started
+# Simulate circuit breaker with Spring Boot and Istio
+This guide will show how to setup a local environemnt with a simple Java Spring Boot application installed
+in Minikube and Istio in order see how it works Istio circuit breaker.
 
-### Create k8s cluster locally with Docker and minikube
+## Prerequisites
+- Java 11
+- Docker and Minikube installed
 
-### Commands
+## Create k8s cluster locally with Docker and minikube
 
+Follow these steps:
 - build a Docker image with Jib and push in the local register: `` ./gradlew jibDockerBuild ``
 - load the image into Miikube with the command: `` minikube image load cart ``
 - deploy the application in your local k8s, go to `/k8s-manifest` folder and run 
@@ -26,20 +31,24 @@ replicaset.apps/cart-969c66977   2         2         2       9m29s
 
 - expose the application outside with this command: ``` kubectl port-forward service/cart 8080:8080 -n t19 ```
 
-- run this command if the service is reachable: ``curl http://localhost:8080/cart/1``. You should get an id as response, for example `"fb817981-ed77-4709-84e8-9bdcf83e2531"`
-
-- configure the circuit breaker adding the k8s custom resources Destination rule running the command: `` kubectl apply -f destinationRule.yaml ``
+- run this command to test if the service is reachable from the host machine: ``curl http://localhost:8080/cart/1``. You should get an id as response, for example `"fb817981-ed77-4709-84e8-9bdcf83e2531"`
 
 ## Simulate the circuit breaker
-The following scenarios show how to simualate the circuit breaking capability with Isio.
+The following scenarios show how to simulate the circuit breaking capability with Isio.
 
-Inspiration from the Istio doc [here](https://istio.io/latest/docs/tasks/traffic-management/circuit-breaking/)
+Inspiration from the Istio documentation:
+- [circuit-breaking](https://istio.io/latest/docs/tasks/traffic-management/circuit-breaking/)
+- [istio-workshop-circuit-breaker](https://www.istioworkshop.io/09-traffic-management/06-circuit-breaker/)
 
-### Tripping the circuit breaker based the throughput
-  - Deploy Fortio with the following command from the root of the project: `` kubectl apply -f k8s-manifests/fortio-deploy.yaml -n t19 ``
-    - test if the cart service is reachable:
-      - ``export FORTIO_POD=$(kubectl get pods -l app=fortio -n t19 -o 'jsonpath={.items[0].metadata.name}')`` 
-      - `` kubectl exec "$FORTIO_POD" -c fortio -n t19 -- /usr/bin/fortio curl -quiet http://cart:8080/cart/1 ``
+### Add the DestinationRule
+
+Configure the circuit breaker adding the k8s custom resources Destination rule running the command: `` kubectl apply -f destinationRule.yaml ``
+
+### Tripping the circuit breaker based on the throughput
+  - Deploy Fortio with the following commands from the root folder: `` kubectl apply -f k8s-manifests/fortio-deploy.yaml -n t19 ``
+  - Test if the cart service is reachable from the client:
+    - ``export FORTIO_POD=$(kubectl get pods -l app=fortio -n t19 -o 'jsonpath={.items[0].metadata.name}')`` 
+    - `` kubectl exec "$FORTIO_POD" -c fortio -n t19 -- /usr/bin/fortio curl -quiet http://cart:8080/cart/1 ``
   - Call the service with two concurrent connections (-c 2) and send 20 requests (-n 20):
     - ``kubectl exec "$FORTIO_POD" -c fortio -n t19 -- /usr/bin/fortio load -c 2 -qps 0 -n 20 -loglevel Warning http://cart:8080/cart/1``
   We should get some 503 errors code
@@ -65,6 +74,12 @@ cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_fai
 cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_overflow: 21
 cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_total: 29
 ```
+
+Kiali graph
+
+![Kiali](kiali-graph-circuit-breaker.png)
+
+
 ### Tripping the circuit breaker based on error (http 500)
 
 Run the command: 
@@ -72,7 +87,7 @@ Run the command:
 kubectl exec "$FORTIO_POD" -c fortio -n t19 -- /usr/bin/fortio load -n 10 -loglevel Warning http://cart:8080/cart/99
 ```
 
-Some request should have been ejected:
+Some requests should have been ejected with 503 error code:
 ```shell
 Code 500 : 1 (10.0 %)
 Code 503 : 9 (90.0 %)
