@@ -1,6 +1,6 @@
 # Simulate circuit breaker with Spring Boot and Istio
-This guide will show how to setup a local environemnt with a simple Java Spring Boot application installed
-in Minikube and Istio in order see how it works Istio circuit breaker.
+This guide will show how to set up a local environment with a simple Java Spring Boot application installed
+in Minikube and Istio in order see the circuit breaker mechanism with Istio.
 
 ## Prerequisites
 - Java 11
@@ -13,7 +13,7 @@ Follow these steps:
 - load the image into Miikube with the command: `` minikube image load cart ``
 - deploy the application in your local k8s, go to `/k8s-manifest` folder and run 
   - `` kubectl -f deployment.yaml ``
-- check if everything is running with the command `` kubectl get all -n t19 ``. You should be able to see:
+- check if everything is running with the command `` kubectl get all -n t19 ``. You should be able to see the following Kubernetes resources:
 ```
 NAME                       READY   STATUS    RESTARTS   AGE
 pod/cart-969c66977-7hfvt   2/2     Running   0          9m28s
