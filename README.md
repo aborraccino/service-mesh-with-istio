@@ -95,7 +95,7 @@ Code 503 : 9 (90.0 %)
 
 Kiali graph
 
-![Kiali](kiali-graph-circuit-breaker-2.png)
+![Kiali-1](kiali-graph-circuit-breaker-2.png)
 
 ### Other scenario
 
