@@ -77,7 +77,7 @@ cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_tot
 
 Kiali graph
 
-![Kiali](kiali-graph-circuit-breaker.png)
+![Kiali](kiali-graph-circuit-breaker-1.png)
 
 
 ### Tripping the circuit breaker based on error (http 500)
@@ -92,6 +92,10 @@ Some requests should have been ejected with 503 error code:
 Code 500 : 1 (10.0 %)
 Code 503 : 9 (90.0 %)
 ```
+
+Kiali graph
+
+![Kiali](kiali-graph-circuit-breaker-2.png)
 
 ### Other scenario
 
